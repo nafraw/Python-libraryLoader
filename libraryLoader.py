@@ -32,8 +32,8 @@ import sys
 import platform
 import getpass
 
-def formattedLoader(prefix='library_path', proj_name='', file_format=['proj', 'OS'], priority=1, verbose=True):
-    # This function will find a config file and add the written lines as a system path with a high priority
+def formattedFileName(prefix='', proj_name='', file_format=['proj', 'OS'], verbose=True):
+    # This function will generates a config file name
     # config file should be named with at least one of the keyword below:
     # OS, computer name, user, or project name
     # The filename ends with .cfg and a underscore between each keyword above
@@ -51,7 +51,18 @@ def formattedLoader(prefix='library_path', proj_name='', file_format=['proj', 'O
         f = remap_keyword(f)
         filename += '_' + info[f]
     filename += '.cfg'
+    if verbose:
+        print(f'selected config: {filename}')
+    return filename
     
+
+def formattedLoader(prefix='library_path', proj_name='', file_format=['proj', 'OS'], priority=1, verbose=True):
+    # This function will find a config file and add the written lines as a system path with a high priority
+    # config file should be named with at least one of the keyword below:
+    # OS, computer name, user, or project name
+    # The filename ends with .cfg and a underscore between each keyword above
+    # e.g.: {prefix}_{proj}_{OS}.cfg
+    filename = formattedFileName(prefix=prefix, proj_name=proj_name, file_format=file_format, verbose=False)
     add_path_from_file(filename, priority=priority, verbose=verbose)
 
 def add_path_from_file(file: str, priority=1, verbose=True):
