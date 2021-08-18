@@ -69,6 +69,8 @@ def add_path_from_file(file: str, priority=1, verbose=True):
     with open(file) as f:
         lines = f.read().splitlines()
     print(f'\x1b[42mLoading: {file}\x1b[0m')
+    if verbose:
+        print('adding paths:')
     for l in lines:        
         if l not in sys.path: # no need to add multiple times
             if not os.path.isdir(l):
@@ -76,7 +78,7 @@ def add_path_from_file(file: str, priority=1, verbose=True):
                 continue
             sys.path.insert(priority, l)
             if verbose:
-                print(f"adding path: {l}", end='')
+                print(f"{l}")
     print('')
 
 def remap_keyword(k: str) -> str:
