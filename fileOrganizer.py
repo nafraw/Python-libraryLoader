@@ -15,6 +15,7 @@ Purpose of file:
 
 import os
 import re
+from typing import List
 from natsort import natsorted
 from libraryLoader import formattedFileName
 try:
@@ -27,6 +28,18 @@ def filesep(fullname):
     filename = os.path.basename(fullname)
     filename, ext = os.path.splitext(filename)
     return dirname, filename, ext
+
+def get_file_begin_with(flist: [], prefix: List[str]):
+    # can be used for example to screen out files begin with one or a list of targeted subject ID
+    flist_screened = []
+    assert(isinstance(prefix, list))
+    for f in flist:
+        _, file_name, _ = filesep(f)
+        for p in prefix:
+            n = len(p)
+            if file_name[0:n] == p:
+                flist_screened.append(f)        
+    return flist_screened
 
 def remove_target_str(name: str, target_str) -> str:
     if isinstance(target_str, str):
@@ -153,24 +166,31 @@ class FileOrganizer:
             ext = '\\' + ext
         elif ext[0] != '\\':
             ext = '\.' + ext
-        expression = prefix + '.*' + postfix + ext
+        expression = '^' + prefix + '.*' + postfix + ext
         if only_at_root:
             files_matched = search_files_at_root_folder(root_path, expression, verbose)
         else:
             files_matched = search_files_from_root_folder(root_path, expression, verbose)
         return files_matched
     
-    def get_name(self, name, filename, delimiter=''):
+    def get_name(self, name, filename, use_prefix=False, delimiter=''):
         root_path, prefix, postfix, ext = self.paths[name]
-        fn = prefix + delimiter + filename + delimiter + postfix + ext[1:] # to skip the '\\' char
+        if use_prefix:
+            fn = prefix + delimiter + filename + delimiter + postfix + ext[1:] # to skip the '\\' char
+        else:
+            fn = filename + delimiter + postfix + ext[1:] # to skip the '\\' char
         return os.path.join(root_path, fn)
     
     def __getitem__(self, name):
         return self.paths[name]
     
 if __name__ == '__main__':    
-    fo = FileOrganizer('./data_path_BCI2019_G20-PK.cfg')
-    fo.load_config_with_formatted_name(proj_name='BCI2019')
-    files = fo.get_files('high lv')
+    fo = FileOrganizer('./data_path_sample.cfg')
+    fo.load_config_with_formatted_name(proj_name='sample', file_format=['proj'])
+    files = fo.get_files('prog')
+    print('----Listing all exe that has prefix---')
     print(files)
-    print(fo.get_name('high lv', 'testname', '_'))
+    print('----Listing all exe that begin with install or uninstall---')
+    flist = get_file_begin_with(files, ['install', 'uninstall'])
+    print(flist)
+    print(fo.get_name('prog', 'testname', '_'))
