@@ -166,7 +166,10 @@ class FileOrganizer:
             ext = '\\' + ext
         elif ext[0] != '\\':
             ext = '\.' + ext
-        expression = '^' + prefix + '.*' + postfix + ext
+        if prefix.strip() == '':
+            expression = '.*' + postfix + ext
+        else:
+            expression = '^' + prefix + '.*' + postfix + ext
         if only_at_root:
             files_matched = search_files_at_root_folder(root_path, expression, verbose)
         else:
