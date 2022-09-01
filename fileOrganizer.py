@@ -160,16 +160,18 @@ class FileOrganizer:
         full_path = os.path.join(name_set[0], folder_name, full_filename)
         return full_path
 
-    def get_files(self, name, only_at_root=False, verbose=False):
+    def get_files(self, name, expression_override=None, only_at_root=False, verbose=False):
         root_path, prefix, postfix, ext = self.paths[name]
         if ext[0] == '.':
             ext = '\\' + ext
         elif ext[0] != '\\':
             ext = '\.' + ext
-        if prefix.strip() == '':
-            expression = '.*' + postfix + ext
-        else:
-            expression = '^' + prefix + '.*' + postfix + ext
+        if expression_override is None:
+            if prefix.strip() == '':
+                expression = '.*' + postfix + ext
+            else:
+                expression = '^' + prefix + '.*' + postfix + ext
+        else: expression = expression_override
         if only_at_root:
             files_matched = search_files_at_root_folder(root_path, expression, verbose)
         else:
