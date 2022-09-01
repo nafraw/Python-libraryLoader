@@ -9,7 +9,7 @@ Purpose of file:
     2. Provide a class to organize files saved for different purposes at different folders (or even at different machines)
         a. For different machines, the class can automatically load a config with only a few parameters given.
         b. For different purposes, the class can easily retrieve related files by using the get_files function.
-    
+
 """
 
 
@@ -29,7 +29,7 @@ def filesep(fullname):
     filename, ext = os.path.splitext(filename)
     return dirname, filename, ext
 
-def get_file_begin_with(flist: [], prefix: List[str]):
+def get_file_begin_with(flist: List[str], prefix: List[str]):
     # can be used for example to screen out files begin with one or a list of targeted subject ID
     flist_screened = []
     assert(isinstance(prefix, list))
@@ -38,7 +38,7 @@ def get_file_begin_with(flist: [], prefix: List[str]):
         for p in prefix:
             n = len(p)
             if file_name[0:n] == p:
-                flist_screened.append(f)        
+                flist_screened.append(f)
     return flist_screened
 
 def remove_target_str(name: str, target_str) -> str:
@@ -56,14 +56,14 @@ def make_folder_if_necessary(filename):
     if not os.path.exists(dirname):
         try:
             os.makedirs(dirname)
-        except FileExistsError:            
+        except FileExistsError:
             pass # directory already exists by maybe other threads or programs
 
 def save_data_as_file(filename, **kwargs):
     saved_vars = {}
     if filename[-4:] != '.pkl':
         print(f'adding extension (.pkl) to {filename}')
-        filename += '.pkl'        
+        filename += '.pkl'
     for key, value in kwargs.items():
         saved_vars[key] = value
     make_folder_if_necessary(filename)
@@ -111,11 +111,11 @@ class FileOrganizer:
             self.load_config(name_config)
         else:
             self.load_config_with_formatted_name(root_path, proj_name, file_format, verbose)
-    
+
     def load_config_with_formatted_name(self, root_path='.', proj_name='', file_format=['proj', 'cname'], verbose=True):
         name_config = formattedFileName(prefix='data_path', proj_name=proj_name, file_format=file_format, verbose=verbose)
         self.load_config(os.path.join(root_path, name_config))
-    
+
     def load_config(self, config):
         print(f'Loading config: {config}')
         self.config = config
@@ -124,7 +124,7 @@ class FileOrganizer:
         keywords = ['name_purpose', 'root_path', 'prefix', 'postfix', 'ext']
         d = {}
         count = 0
-        for l in lines:         
+        for l in lines:
             if len(l) > 0 and l[0] == '#': # begin with a comments, skip this line
                 continue
             idx_comment = str.find(l, '#') # remove strings from the # symbol
@@ -143,12 +143,12 @@ class FileOrganizer:
             prefix = lines[i+2]
             postfix = lines[i+3]
             ext = lines[i+4]
-            self.add_path(name_purpose, root_path, prefix, postfix, ext)        
+            self.add_path(name_purpose, root_path, prefix, postfix, ext)
         '''
-    
-    def add_path(self, name_purpose, root_path, prefix='', postfix='', ext=''):        
+
+    def add_path(self, name_purpose, root_path, prefix='', postfix='', ext=''):
         self.paths[name_purpose] = (root_path, prefix, postfix, ext)
-    
+
     def get_full_path(self, name_purpose, folder_name, filename):
         name_set = self.paths[name_purpose]
         full_filename = filename
@@ -159,7 +159,7 @@ class FileOrganizer:
         full_filename += '.' + name_set[3]
         full_path = os.path.join(name_set[0], folder_name, full_filename)
         return full_path
-    
+
     def get_files(self, name, only_at_root=False, verbose=False):
         root_path, prefix, postfix, ext = self.paths[name]
         if ext[0] == '.':
@@ -175,7 +175,7 @@ class FileOrganizer:
         else:
             files_matched = search_files_from_root_folder(root_path, expression, verbose)
         return files_matched
-    
+
     def get_name(self, name, filename, use_prefix=False, delimiter=''):
         root_path, prefix, postfix, ext = self.paths[name]
         if use_prefix:
@@ -183,11 +183,11 @@ class FileOrganizer:
         else:
             fn = filename + delimiter + postfix + ext[1:] # to skip the '\\' char
         return os.path.join(root_path, fn)
-    
+
     def __getitem__(self, name):
         return self.paths[name]
-    
-if __name__ == '__main__':    
+
+if __name__ == '__main__':
     fo = FileOrganizer('./data_path_sample.cfg')
     fo.load_config_with_formatted_name(proj_name='sample', file_format=['proj'])
     files = fo.get_files('prog')
