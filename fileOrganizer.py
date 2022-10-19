@@ -21,6 +21,12 @@ from libraryLoader import formattedFileName
 try:
     import cPickle as pickle
 except ModuleNotFoundError:
+    import imp
+    try:
+        imp.find_module('pickle5')
+        import pickle5 as pickle5
+    except ImportError:
+        pass    
     import pickle
 
 def filesep(fullname):
@@ -72,10 +78,13 @@ def save_data_as_file(filename, **kwargs):
 
 def load_data_file(filename):
     with open(filename, 'rb') as f:
-        data = pickle.load(f)
+        try:
+            data = pickle.load(f)
+        except:
+            data = pickle5.load(f)
     return data
 
-def search_files_from_root_folder(root, expression, verbose=False):
+def search_files_from_root_folder(root, expression, folder_as_file=False, verbose=False):
     # using regular expression to search all files at and below the root folder
     files_matched = []
     for path_folder, subfolder, files in os.walk(root):
@@ -86,6 +95,14 @@ def search_files_from_root_folder(root, expression, verbose=False):
                 files_matched.append(to_add)
                 if verbose:
                     print('match: ', to_add)
+        if folder_as_file: # useful for EGI data
+            for f in subfolder:
+                match = re.search(expression, f)
+                if match:
+                    to_add = os.path.join(path_folder, f)
+                    files_matched.append(to_add)
+                    if verbose:
+                        print('match: ', to_add)
     files_matched = natsorted(files_matched)
     return files_matched
 
@@ -160,7 +177,7 @@ class FileOrganizer:
         full_path = os.path.join(name_set[0], folder_name, full_filename)
         return full_path
 
-    def get_files(self, name, expression_override=None, only_at_root=False, verbose=False):
+    def get_files(self, name, expression_override=None, only_at_root=False, folder_as_file=False, verbose=False):
         root_path, prefix, postfix, ext = self.paths[name]
         if ext[0] == '.':
             ext = '\\' + ext
@@ -173,9 +190,9 @@ class FileOrganizer:
                 expression = '^' + prefix + '.*' + postfix + ext
         else: expression = expression_override
         if only_at_root:
-            files_matched = search_files_at_root_folder(root_path, expression, verbose)
+            files_matched = search_files_at_root_folder(root_path, expression, folder_as_file, verbose)
         else:
-            files_matched = search_files_from_root_folder(root_path, expression, verbose)
+            files_matched = search_files_from_root_folder(root_path, expression, folder_as_file, verbose)
         return files_matched
 
     def get_name(self, name, filename, use_prefix=False, delimiter=''):
