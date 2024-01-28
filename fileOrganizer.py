@@ -170,7 +170,10 @@ class FileOrganizer:
         name_set = self.paths[name_purpose]
         full_filename = filename
         if name_set[1] != '':
-            full_filename = name_set[1] + '_' + full_filename
+            if filename != '':
+                full_filename = name_set[1] + '_' + full_filename
+            else:
+                full_filename = name_set[1] + full_filename
         if name_set[2] != '':
             full_filename += '_' + name_set[2]
         full_filename += '.' + name_set[3]
@@ -182,7 +185,7 @@ class FileOrganizer:
         if ext[0] == '.':
             ext = '\\' + ext
         elif ext[0] != '\\':
-            ext = '\.' + ext
+            ext = '\.' + ext + '$' # $ for ending of line
         if expression_override is None:
             if prefix.strip() == '':
                 expression = '.*' + postfix + ext
